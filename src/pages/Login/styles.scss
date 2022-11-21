@@ -1,0 +1,28 @@
+.login-page {
+  padding-top: 100px;
+  display: flex;
+  justify-content: space-around;
+}
+
+img {
+    object-fit: cover;
+}
+
+@media screen and (min-width: 968px) and (max-width: 1264px) {
+  .login-page {
+    display: flex;
+    justify-content: center;
+  }
+}
+
+
+@media screen and (min-width: 200px) and (max-width: 968px) {
+    img {
+        display: none;
+    }
+    .login-page {
+      display: flex;
+      justify-content: center;
+    }
+  }
+  
