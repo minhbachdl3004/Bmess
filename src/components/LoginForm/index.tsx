@@ -1,64 +1,120 @@
-import React, { useState, ChangeEvent, FormEvent } from "react";
+import React, {
+  useState,
+  ChangeEvent,
+  FormEvent,
+  useRef,
+  useMemo,
+  useEffect,
+  useCallback,
+} from "react";
 import "./styles.scss";
 import { Link } from "react-router-dom";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import IconButton from "@material-ui/core/IconButton";
-import Input from "../Input";
+import Input from "../common/Input";
+import axios from "axios";
+import useUserStore from "../../store/userStore";
+import MySnackbar from "../common/SnackBar";
+import { Modal } from "@mui/material";
 
 const LoginForm = () => {
-  const [username, setUsername] = useState<String>("");
-  const [password, setPassword] = useState<String>("");
+  const [username, setUsername] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
   const [hiddenPassword, setHiddenPassword] = useState<Boolean>(false);
   const [passwordType, setPasswordType] = useState<"text" | "password">(
     "password"
   );
+  const formRef = useRef<HTMLFormElement>(null);
+  const [open, setOpen] = useState(false);
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
 
-  const handleClickShowPassword = () => {
+  const setToken = useUserStore((store) => store.setToken);
+
+  const errorInput = useUserStore((store) => store.errorInput)
+
+  const handleClickShowPassword = useCallback(() => {
     setHiddenPassword(!hiddenPassword);
     setPasswordType(hiddenPassword ? "password" : "text");
-  };
+  }, [hiddenPassword]);
 
-  const handleLogin = (e: FormEvent<HTMLFormElement>) => {
+  const handleClose = useCallback(() => {
+    setOpen(false);
+  }, []);
+
+  const handleShowSnackbar = useMemo(
+    () => (msg: string) => {
+      setMessage(msg);
+      setOpen(true);
+    },
+    []
+  );
+
+  const handleLogin = async (e: any) => {
     e.preventDefault();
 
     const newUser = {
       username: username,
       password: password,
     };
+
+    if (errorInput === null) {
+      try {
+        const token = await axios.post(
+          "http://localhost:3000/api/auth/login",
+          newUser
+        );
+        setToken(token.data?.accessToken);
+        console.log(token.data?.accessToken);
+        setMessage("Login successful!");
+        setStatus("success");
+      } catch (error: any) {
+        console.log(error);
+        setMessage("Login failed!");
+        setStatus("error");
+      }
+    } else {
+      setMessage("Input is not valid!")
+      setStatus("error");
+    }
+
+    formRef.current?.reset(); // Clear the form fields
   };
 
   return (
     <div className="login__form">
-      <h1 className="title">Sign in</h1>
-      <form onSubmit={handleLogin}>
+      <h1 style={{color: "#17d177"}} className="title">BMess</h1>
+      <form ref={formRef} onSubmit={handleLogin}>
         <div className="login__form-username">
-          <label>Username</label>
           <Input
             type="text"
-            placeHolder="Enter your username"
+            placeHolder="Username*"
             onChange={(e: ChangeEvent<HTMLInputElement>) =>
               setUsername(e.target.value)
             }
             isPassword={false}
+            value={username}
           />
         </div>
         <div className="login__form-password">
-          <label>Password</label>
           <div className="password-input">
             <Input
               type={passwordType}
-              placeHolder="Enter your Password"
+              placeHolder="Password*"
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 setPassword(e.target.value)
               }
               isPassword={true}
               handleClickShowPassword={handleClickShowPassword}
               hiddenPassword={hiddenPassword}
+              value={password}
             />
           </div>
         </div>
-        <button className="btn-login">Login</button>
+        <button
+          onClick={() => handleShowSnackbar(message)}
+          className="btn-login"
+        >
+          Login
+        </button>
       </form>
       <span className="notice-link">
         Don't have an Account?{" "}
@@ -71,6 +127,13 @@ const LoginForm = () => {
           </Link>
         </span>
       </span>
+      <MySnackbar
+        open={open}
+        message={message}
+        onClose={handleClose}
+        className={message}
+        status={status}
+      />
     </div>
   );
 };

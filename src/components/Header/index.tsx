@@ -2,13 +2,20 @@ import React, { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import "./styles.scss";
 import Logo from "../../assets/images/whatsapp.png";
+import useUserStore from "../../store/userStore";
+import AccountMenu from "../common/profile";
+import { padding } from "@mui/system";
 
-interface Username {
-  isLogin: boolean;
-  username: String;
-}
+const Header = () => {
+  const loadFromToken = useUserStore((state) => state.loadFromToken);
+  const token = useUserStore((state) => state.user);
+  const logout = useUserStore((store) => store.logout);
 
-const Header = ({ username, isLogin }: Username) => {
+  useEffect(() => {
+    loadFromToken();
+  }, []);
+  console.log(token);
+
   const headerRef = useRef<any>(null);
 
   useEffect(() => {
@@ -27,6 +34,10 @@ const Header = ({ username, isLogin }: Username) => {
       window.removeEventListener("scroll", shrinkHeader);
     };
   }, []);
+
+  const handleLogout = () => {
+    logout();
+  };
   return (
     <nav ref={headerRef} className="nav">
       <div className="container">
@@ -40,15 +51,31 @@ const Header = ({ username, isLogin }: Username) => {
         </div>
         <div id="mainListDiv" className="main_list">
           <ul className="navlinks">
-            <li>
-              <Link to="/login">Log In</Link>
-            </li>
-            <li>
-              <Link to="/register">Register</Link>
-            </li>
-            <li>
-              <Link to="/login">Log Out</Link>
-            </li>
+            {token ? (
+              <>
+                <div
+                  style={{
+                    width: 100,
+                    height: "auto",
+                    padding: 10,
+                  }}
+                >
+                  <AccountMenu
+                    username={token?.username}
+                    onClick={handleLogout}
+                  />
+                </div>
+              </>
+            ) : (
+              <>
+                <li>
+                  <Link to="/login">Log In</Link>
+                </li>
+                <li>
+                  <Link to="/register">Register</Link>
+                </li>
+              </>
+            )}
           </ul>
         </div>
         <span className="navTrigger">

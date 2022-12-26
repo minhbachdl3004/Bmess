@@ -1,6 +1,5 @@
 .register__form {
   width: 360px;
-  height: 720px;
   padding: 20px;
   box-shadow: 0 0 11px rgba(33, 33, 33, 0.2);
   border-radius: 8px;
@@ -11,7 +10,7 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    margin: 10px 0px;
+    margin: 20px 0px;
   }
 
   & label {
@@ -33,14 +32,14 @@
   & input {
     width: 80%;
     padding: 18px 35px 18px 35px;
-    border-radius: 8px;
+    border-radius: 50px;
     border: 1px solid rgb(59, 58, 58);
   }
 
   & .btn-register {
     width: 100%;
     padding: 15px;
-    border-radius: 8px;
+    border-radius: 50px;
     background-color: black;
     color: white;
     font-size: 16px;
