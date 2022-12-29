@@ -29,8 +29,6 @@ const LoginForm = () => {
 
   const setToken = useUserStore((store) => store.setToken);
 
-  const errorInput = useUserStore((store) => store.errorInput)
-
   const handleClickShowPassword = useCallback(() => {
     setHiddenPassword(!hiddenPassword);
     setPasswordType(hiddenPassword ? "password" : "text");
@@ -56,23 +54,18 @@ const LoginForm = () => {
       password: password,
     };
 
-    if (errorInput === null) {
-      try {
-        const token = await axios.post(
-          "http://localhost:3000/api/auth/login",
-          newUser
-        );
-        setToken(token.data?.accessToken);
-        console.log(token.data?.accessToken);
-        setMessage("Login successful!");
-        setStatus("success");
-      } catch (error: any) {
-        console.log(error);
-        setMessage("Login failed!");
-        setStatus("error");
-      }
-    } else {
-      setMessage("Input is not valid!")
+    try {
+      const token = await axios.post(
+        "http://localhost:3000/api/auth/login",
+        newUser
+      );
+      setToken(token.data?.accessToken);
+      console.log(token.data?.accessToken);
+      setMessage("Login successful!");
+      setStatus("success");
+    } catch (error: any) {
+      console.log(error);
+      setMessage(error.response.data);
       setStatus("error");
     }
 
@@ -81,7 +74,9 @@ const LoginForm = () => {
 
   return (
     <div className="login__form">
-      <h1 style={{color: "#17d177"}} className="title">BMess</h1>
+      <h1 style={{ color: "#17d177" }} className="title">
+        BMess
+      </h1>
       <form ref={formRef} onSubmit={handleLogin}>
         <div className="login__form-username">
           <Input

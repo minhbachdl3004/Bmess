@@ -11,11 +11,13 @@ import Input from "../common/Input";
 import "./styles.scss";
 import MySnackbar from "../common/SnackBar";
 import useUserStore from "../../store/userStore";
+import { NightsStay } from "@material-ui/icons";
+import ValidationError from "../common/ValidationInput";
 
 const RegisterForm = () => {
-  const [email, setEmail] = useState<string>("");
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
   const formRef = useRef<HTMLFormElement>(null);
 
   const [hiddenPassword, setHiddenPassword] = useState<Boolean>(false);
@@ -24,7 +26,9 @@ const RegisterForm = () => {
   const [passwordType, setPasswordType] = useState<"text" | "password">(
     "password"
   );
-
+  const [confirmPasswordType, setConfirmPasswordType] = useState<
+    "text" | "password"
+  >("password");
 
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -36,6 +40,11 @@ const RegisterForm = () => {
     setHiddenPassword(!hiddenPassword);
     setPasswordType(hiddenPassword ? "password" : "text");
   }, [hiddenPassword]);
+
+  const handleClickShowConfirmPassword = useCallback(() => {
+    setHiddenConfirmPassword(!hiddenConfirmPassword);
+    setConfirmPasswordType(hiddenConfirmPassword ? "password" : "text");
+  }, [hiddenConfirmPassword]);
 
   const handleClose = useCallback(() => {
     setOpen(false);
@@ -53,12 +62,11 @@ const RegisterForm = () => {
     e.preventDefault();
 
     const newUser = {
-      email: email,
       username: username,
       password: password,
     };
 
-    if (errorInput === null) {
+    if (errorInput === "") {
       try {
         const userRegister = await axios.post(
           "http://localhost:3000/api/auth/register",
@@ -73,7 +81,7 @@ const RegisterForm = () => {
         setStatus("error");
       }
     } else {
-      setMessage("Input is not valid")
+      setMessage("Input is not valid");
       setStatus("error");
     }
     formRef.current?.reset();
@@ -84,17 +92,6 @@ const RegisterForm = () => {
         BMess
       </h1>
       <form ref={formRef} onSubmit={handleRegister}>
-        <div className="register__form-email">
-          <Input
-            type="email"
-            placeHolder="Email*"
-            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-              setEmail(e.target.value)
-            }
-            isPassword={false}
-            value={email}
-          />
-        </div>
         <div className="register__form-username">
           <Input
             type="text"
@@ -104,6 +101,7 @@ const RegisterForm = () => {
             }
             isPassword={false}
             value={username}
+            name="username"
           />
         </div>
         <div className="register__form-password">
@@ -117,7 +115,25 @@ const RegisterForm = () => {
               setPassword(e.target.value)
             }
             value={password}
+            name="password"
           />
+        </div>
+        <div className="register__form-password">
+          <Input
+            type={confirmPasswordType}
+            placeHolder="Confirm Password*"
+            isPassword={true}
+            handleClickShowPassword={handleClickShowConfirmPassword}
+            hiddenPassword={hiddenConfirmPassword}
+            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+              setConfirmPassword(e.target.value)
+            }
+            value={confirmPassword}
+            name="confirmPassword"
+          />
+          {confirmPassword && (password !== confirmPassword ? (
+            <ValidationError message="Password don't match" />
+          ) : null)}
         </div>
         <button
           onClick={() => handleShowSnackbar(message)}
